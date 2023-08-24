@@ -74,7 +74,19 @@ for playlist_name, playlist_id in playlist_dict.items():
             # Get the track's artist
             track_dict["artist"] = track["track"]["artists"][0]["name"]
             # Get the track's artist ID
-            track_dict["artist_id"] = track["track"]["artists"][0]["id"]
+            artist_id = track["track"]["artists"][0].get("id")
+            if artist_id:
+                track_dict["artist_id"] = artist_id
+                # Try fetching the artist's genre(s)
+                try:
+                    track_dict["artist_genre"] = spotify.artist(artist_id=artist_id)["genres"]
+                except Exception as e:
+                    logger.error(f"Error fetching genres for artist_id: {artist_id}. Error: {e}")
+                    track_dict["artist_genre"] = []
+            else:
+                track_dict["artist_id"] = None
+                track_dict["artist_genre"] = []
+                logger.warning(f"No artist_id found for track {track_dict['name']}. Skipping genre fetch.")
             # Get the track's album
             track_dict["album"] = track["track"]["album"]["name"]
             # Get the track's ID
@@ -83,8 +95,6 @@ for playlist_name, playlist_id in playlist_dict.items():
             track_dict["added_at"] = track["added_at"]
             # Get the track's URI
             track_dict["uri"] = track["track"]["uri"]
-            # Optionally, if you want to get the artist's genre(s)
-            # track_dict["artist_genre"] = spotify.artist(artist_id=track_dict["artist_id"])["genres"]
             # Get the track's playlist name
             track_dict["playlist_name"] = playlist_name
             logger.success(f"Successfully got track {track_dict['name']} info from {playlist_name}.")
