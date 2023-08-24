@@ -1,7 +1,7 @@
 from dotenv import load_dotenv, find_dotenv
+from loguru import logger
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
-from loguru import logger
 import os
 import pandas as pd
 import spotipy
@@ -69,11 +69,9 @@ for playlist_name, playlist_id in playlist_dict.items():
         for track in playlist_items["items"]:
             # Initialize an empty dictionary for each track
             track_dict = {}
-            # Get the track's name
+            # Fill the dictionary with the track's information
             track_dict["name"] = track["track"]["name"]
-            # Get the track's artist
             track_dict["artist"] = track["track"]["artists"][0]["name"]
-            # Get the track's artist ID
             artist_id = track["track"]["artists"][0].get("id")
             # If the artist ID exists, get the artist's genre(s)
             if artist_id:
@@ -88,15 +86,10 @@ for playlist_name, playlist_id in playlist_dict.items():
                 track_dict["artist_id"] = None
                 track_dict["artist_genre"] = []
                 logger.warning(f"No artist_id found for track {track_dict['name']}. Skipping genre fetch.")
-            # Get the track's album
             track_dict["album"] = track["track"]["album"]["name"]
-            # Get the track's ID
             track_dict["id"] = track["track"]["id"]
-            # Get the track's added_at date
             track_dict["added_at"] = track["added_at"]
-            # Get the track's URI
             track_dict["uri"] = track["track"]["uri"]
-            # Get the track's playlist name
             track_dict["playlist_name"] = playlist_name
             logger.success(f"Successfully got track {track_dict['name']} info from {playlist_name}.")
             # Append the track dictionary to the tracks list
