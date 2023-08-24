@@ -75,6 +75,7 @@ for playlist_name, playlist_id in playlist_dict.items():
             track_dict["artist"] = track["track"]["artists"][0]["name"]
             # Get the track's artist ID
             artist_id = track["track"]["artists"][0].get("id")
+            # If the artist ID exists, get the artist's genre(s)
             if artist_id:
                 track_dict["artist_id"] = artist_id
                 # Try fetching the artist's genre(s)
