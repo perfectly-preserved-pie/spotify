@@ -70,6 +70,7 @@ for playlist_name, playlist_id in playlist_dict.items():
             # Initialize an empty dictionary for each track
             track_dict = {}
             # Fill the dictionary with the track's information
+            # https://developer.spotify.com/documentation/web-api/reference/get-playlists-tracks
             track_dict["name"] = track["track"]["name"]
             track_dict["artist"] = track["track"]["artists"][0]["name"]
             artist_id = track["track"]["artists"][0].get("id")
@@ -86,6 +87,10 @@ for playlist_name, playlist_id in playlist_dict.items():
                 track_dict["artist_id"] = None
                 track_dict["artist_genre"] = []
                 logger.warning(f"No artist_id found for track {track_dict['name']}. Skipping genre fetch.")
+            track_dict["explicit"] = track["track"]["explicit"]
+            track_dict["popularity"] = track["track"]["popularity"]
+            track_dict["duration_ms"] = track["track"]["duration_ms"]
+            track_dict["preview_url"] = track["track"]["preview_url"]
             track_dict["album"] = track["track"]["album"]["name"]
             track_dict["id"] = track["track"]["id"]
             track_dict["added_at"] = track["added_at"]
