@@ -140,7 +140,7 @@ for time_range in time_ranges:
     top_artists_list.extend(process_artists(artists, time_range))
 
 # Now stuff the tracks list into a dataframe
-df_tracks = pd.DataFrame(tracks_list)
+pd.DataFrame(tracks_list).to_parquet("datasets/tracks.parquet")
 
 # Now stuff the top artists list into a dataframe
-df_top_artists = pd.DataFrame(top_artists_list)
+pd.DataFrame(top_artists_list).to_parquet("datasets/top_artists.parquet")
