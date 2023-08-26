@@ -93,7 +93,10 @@ for playlist_name, playlist_id in playlist_dict.items():
             else:
                 track_dict["artist_id"] = None
                 track_dict["artist_genre"] = []
-                logger.warning(f"No artist_id found for track {track_dict['name']}. Skipping genre fetch.")
+                track_dict["artist_images_large"] = None
+                track_dict["artist_images_medium"] = None
+                track_dict["artist_images_small"] = None
+                logger.warning(f"No artist_id found for track {track_dict['name']}. Skipping artist info fetch.")
             track_dict["explicit"] = track["track"]["explicit"]
             track_dict["popularity"] = track["track"]["popularity"]
             track_dict["duration_ms"] = track["track"]["duration_ms"]
