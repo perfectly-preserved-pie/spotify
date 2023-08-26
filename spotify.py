@@ -10,7 +10,7 @@ load_dotenv(find_dotenv())
 
 spotify = spotipy.Spotify(
     auth_manager=SpotifyOAuth(
-        scope=["playlist-read-private"],
+        scope=["playlist-read-private", "user-top-read"],
         client_id=os.getenv("SPOTIFY_CLIENT_ID"),
         client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
         redirect_uri="http://localhost",
@@ -112,5 +112,34 @@ for playlist_name, playlist_id in playlist_dict.items():
         # Increment the offset by the limit for the next iteration
         offset += LIMIT
 
+# Create a function to process the artist data
+def process_artists(artists, time_range):
+    artist_list = []
+    for artist in artists:
+        artist_dict = {
+            "name": artist["name"],
+            "id": artist["id"],
+            "genres": artist["genres"],
+            "time_range": time_range
+        }
+        images = artist.get("images", [{}]*3)
+        artist_dict["images_large"] = images[0].get("url")
+        artist_dict["images_medium"] = images[1].get("url")
+        artist_dict["images_small"] = images[2].get("url")
+        artist_list.append(artist_dict)
+    return artist_list
+
+# Time ranges to check
+time_ranges = ["long_term", "medium_term", "short_term"]
+
+top_artists_list = []
+
+for time_range in time_ranges:
+    artists = spotify.current_user_top_artists(limit=5, time_range=time_range)["items"]
+    top_artists_list.extend(process_artists(artists, time_range))
+
 # Now stuff the tracks list into a dataframe
-df = pd.DataFrame(tracks_list)
+df_tracks = pd.DataFrame(tracks_list)
+
+# Now stuff the top artists list into a dataframe
+df_top_artists = pd.DataFrame(top_artists_list)
