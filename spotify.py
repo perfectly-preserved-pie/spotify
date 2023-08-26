@@ -77,9 +77,13 @@ for playlist_name, playlist_id in playlist_dict.items():
             # If the artist ID exists, get the artist's genre(s)
             if artist_id:
                 track_dict["artist_id"] = artist_id
-                # Try fetching the artist's genre(s)
+                # Try fetching the artist's info
                 try:
-                    track_dict["artist_genre"] = spotify.artist(artist_id=artist_id)["genres"]
+                    artist_info = spotify.artist(artist_id=artist_id)
+                    track_dict["artist_genre"] = artist_info["genres"]
+                    track_dict["artist_images_large"] = artist_info["images"][0]["url"]
+                    track_dict["artist_images_medium"] = artist_info["images"][1]["url"]
+                    track_dict["artist_images_small"] = artist_info["images"][2]["url"]
                 except Exception as e:
                     logger.error(f"Error fetching genres for artist_id: {artist_id}. Error: {e}")
                     track_dict["artist_genre"] = []
