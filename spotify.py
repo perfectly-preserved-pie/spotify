@@ -10,7 +10,7 @@ load_dotenv(find_dotenv())
 
 spotify = spotipy.Spotify(
     auth_manager=SpotifyOAuth(
-        scope=["playlist-read-private", "user-top-read"],
+        scope=["playlist-read-private", "user-top-read"], # https://developer.spotify.com/documentation/web-api/concepts/scopes
         client_id=os.getenv("SPOTIFY_CLIENT_ID"),
         client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
         redirect_uri="http://localhost",
@@ -112,7 +112,8 @@ for playlist_name, playlist_id in playlist_dict.items():
         # Increment the offset by the limit for the next iteration
         offset += LIMIT
 
-# Create a function to process the artist data
+# Create a function to process the artist data when we get the top artists
+# https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks
 def process_artists(artists, time_range):
     artist_list = []
     for artist in artists:
