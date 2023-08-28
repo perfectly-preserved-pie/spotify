@@ -115,7 +115,10 @@ for playlist_name, playlist_id in playlist_dict.items():
 # Fetch genres for a given artist ID
 def get_genre_for_artist(spotify, artist_id):
     artist_data = spotify.artist(artist_id)
-    return artist_data.get("genres", [])
+    genres = artist_data.get("genres", [])
+    if not genres:
+        logger.warning(f"No genres found for artist ID: {artist_id}, Artist Name: {artist_data.get('name')}")
+    return genres
 
 # First, let's fetch the top artists and create a mapping from artist ID to genres
 def fetch_top_artists(spotify, time_ranges):
@@ -158,6 +161,8 @@ def fetch_top_tracks(spotify, time_ranges, artist_genre_mapping):
             first_artist_id = track["artists"][0]["id"]
             if first_artist_id not in artist_genre_mapping:
                 artist_genre_mapping[first_artist_id] = get_genre_for_artist(spotify, first_artist_id)
+            elif not artist_genre_mapping[first_artist_id]:
+                logger.warning(f"Empty genre list in mapping for artist ID: {first_artist_id}")
             track_dict["genres"] = artist_genre_mapping[first_artist_id]
             images = track["album"].get("images", [{}]*3)
             track_dict["images_large"] = images[0].get("url")
