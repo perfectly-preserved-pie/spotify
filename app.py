@@ -32,7 +32,6 @@ def create_top_tracks_grid(time_range):
             {"headerName": "Track", "field": "name", "sortable": True, "filter": True},
             {"headerName": "Artist", "field": "artist", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
-            {"headerName": "Explicit", "field": "explicit", "sortable": True, "filter": True},
             {"headerName": "Preview URL", "field": "preview_url", "sortable": False, "filter": False, "cellRenderer": "linkCellRenderer"},
         ],
         rowData=df.to_dict("records"),
