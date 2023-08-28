@@ -17,7 +17,6 @@ def initial_top_artists_grid(time_range):
             {"headerName": "Artist Image", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
             {"headerName": "Artist", "field": "name", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
-            {"headerName": "Time Range", "field": "time_range", "sortable": True, "filter": True},
         ],
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
