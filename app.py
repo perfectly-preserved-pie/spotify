@@ -17,7 +17,6 @@ def initial_top_artists_grid(time_range):
             {"headerName": "Artist", "field": "name", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
             {"headerName": "Time Range", "field": "time_range", "sortable": True, "filter": True},
-            {"headerName": "Images", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "imageCellRenderer"}
         ],
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
@@ -34,7 +33,6 @@ def create_top_tracks_grid(time_range):
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
             {"headerName": "Explicit", "field": "explicit", "sortable": True, "filter": True},
             {"headerName": "Preview URL", "field": "preview_url", "sortable": False, "filter": False, "cellRenderer": "linkCellRenderer"},
-            {"headerName": "Images", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "imageCellRenderer"}
         ],
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
