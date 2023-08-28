@@ -112,68 +112,62 @@ for playlist_name, playlist_id in playlist_dict.items():
         # Increment the offset by the limit for the next iteration
         offset += LIMIT
 
-# Create a function to process the artist data when we get the top artists
-# https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks
-def process_artists(artists, time_range):
-    artist_list = []
-    for artist in artists:
-        artist_dict = {
-            "name": artist["name"],
-            "id": artist["id"],
-            "genres": artist["genres"],
-            "time_range": time_range
-        }
-        images = artist.get("images", [{}]*3)
-        artist_dict["images_large"] = images[0].get("url")
-        artist_dict["images_medium"] = images[1].get("url")
-        artist_dict["images_small"] = images[2].get("url")
-        artist_list.append(artist_dict)
-    return artist_list
+# Fetch genres for a given artist ID
+def get_genre_for_artist(spotify, artist_id):
+    artist_data = spotify.artist(artist_id)
+    return artist_data.get("genres", [])
 
-# Time ranges to check
-time_ranges = ["long_term", "medium_term", "short_term"]
+# First, let's fetch the top artists and create a mapping from artist ID to genres
+def fetch_top_artists(spotify, time_ranges):
+    top_artists_list = []
+    for time_range in time_ranges:
+        artists = spotify.current_user_top_artists(limit=5, time_range=time_range)["items"]
+        for artist in artists:
+            artist_dict = {
+                "name": artist["name"],
+                "id": artist["id"],
+                "genres": artist["genres"],
+                "time_range": time_range
+            }
+            images = artist.get("images", [{}]*3)
+            artist_dict["images_large"] = images[0].get("url")
+            artist_dict["images_medium"] = images[1].get("url")
+            artist_dict["images_small"] = images[2].get("url")
+            top_artists_list.append(artist_dict)
+    return top_artists_list
 
-top_artists_list = []
+top_artists_list = fetch_top_artists(spotify, ["long_term", "medium_term", "short_term"])
+artist_genre_mapping = {artist['id']: artist['genres'] for artist in top_artists_list}
 
-for time_range in time_ranges:
-    artists = spotify.current_user_top_artists(limit=5, time_range=time_range)["items"]
-    top_artists_list.extend(process_artists(artists, time_range))
+# Now, fetch the top tracks
+def fetch_top_tracks(spotify, time_ranges, artist_genre_mapping):
+    top_tracks_list = []
+    for time_range in time_ranges:
+        tracks = spotify.current_user_top_tracks(limit=5, time_range=time_range)["items"]
+        for track in tracks:
+            track_dict = {
+                "name": track["name"],
+                "artist": ", ".join([artist["name"] for artist in track["artists"]]),
+                "id": track["id"],
+                "explicit": track["explicit"],
+                "preview_url": track["preview_url"],
+                "time_range": time_range
+            }
+            # Using the mapping to get genres of the artist associated with this track
+            # If the artist ID is not in the mapping, fetch the genres from the API
+            first_artist_id = track["artists"][0]["id"]
+            if first_artist_id not in artist_genre_mapping:
+                artist_genre_mapping[first_artist_id] = get_genre_for_artist(spotify, first_artist_id)
+            track_dict["genres"] = artist_genre_mapping[first_artist_id]
+            images = track["album"].get("images", [{}]*3)
+            track_dict["images_large"] = images[0].get("url")
+            track_dict["images_medium"] = images[1].get("url")
+            track_dict["images_small"] = images[2].get("url")
+            top_tracks_list.append(track_dict)
+    return top_tracks_list
 
-## Repeat the same process for top tracks
-# Create a function to process the track data when we get the top tracks
-# https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks
-def process_tracks(tracks, time_range):
-    track_list = []
-    for track in tracks:
-        track_dict = {
-            "name": track["name"],
-            # Join multiple artist names into a single string, separated by commas
-            "artist": ", ".join([artist["name"] for artist in track["artists"]]),
-            "id": track["id"],
-            # Get the genres from the first artist
-            "genres": spotify.artist(artist_id=track["artists"][0]["id"]).get("genres", []),
-            "explicit": track["explicit"],
-            "preview_url": track["preview_url"],
-            "time_range": time_range
-        }
-        images = track["album"].get("images", [{}]*3)
-        track_dict["images_large"] = images[0].get("url")
-        track_dict["images_medium"] = images[1].get("url")
-        track_dict["images_small"] = images[2].get("url")
-        track_list.append(track_dict)
-    return track_list
+top_tracks_list = fetch_top_tracks(spotify, ["long_term", "medium_term", "short_term"], artist_genre_mapping)
 
-top_tracks_list = []
-
-for time_range in time_ranges:
-    tracks = spotify.current_user_top_tracks(limit=5, time_range=time_range)["items"]
-    top_tracks_list.extend(process_tracks(tracks, time_range))
-
-# Now stuff the tracks list into a dataframe
-pd.DataFrame(tracks_list).to_parquet("datasets/tracks.parquet")
-
-# Now stuff the top artists list into a dataframe
+# Save the top artists and tracks lists to parquet files
 pd.DataFrame(top_artists_list).to_parquet("datasets/top_artists.parquet")
-
-# Now stuff the top tracks list into a dataframe
 pd.DataFrame(top_tracks_list).to_parquet("datasets/top_tracks.parquet")
