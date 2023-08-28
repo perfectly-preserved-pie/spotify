@@ -14,7 +14,7 @@ def initial_top_artists_grid(time_range):
     return dag.AgGrid(
         id="top-artists-ag-grid",
         columnDefs=[
-            {"headerName": "Artist Image", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
+            {"headerName": "", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
             {"headerName": "Artist", "field": "name", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
         ],
@@ -28,6 +28,7 @@ def create_top_tracks_grid(time_range):
     return dag.AgGrid(
         id="top-tracks-ag-grid",
         columnDefs=[
+            {"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
             {"headerName": "Track", "field": "name", "sortable": True, "filter": True},
             {"headerName": "Artist", "field": "artist", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
