@@ -51,9 +51,9 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
-            html.H1("Spotify Top Artists and Tracks", className="text-center"),
+            html.H1("My Spotify Top Artists and Tracks", className="text-center"),
             html.Hr(),
-            html.P("Select a time range to view your top artists and tracks for that time period.", className="text-center"),
+            html.P("Select a time range to view my top artists and tracks for that time period.", className="text-center"),
             dcc.Dropdown(
                 id="time-range-dropdown",
                 options=[
