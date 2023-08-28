@@ -14,6 +14,7 @@ def initial_top_artists_grid(time_range):
     return dag.AgGrid(
         id="top-artists-ag-grid",
         columnDefs=[
+            {"headerName": "Artist Image", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
             {"headerName": "Artist", "field": "name", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
             {"headerName": "Time Range", "field": "time_range", "sortable": True, "filter": True},
