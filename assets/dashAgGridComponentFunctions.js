@@ -1,12 +1,8 @@
 var dagcomponentfuncs = window.dashAgGridComponentFunctions = window.dashAgGridComponentFunctions || {};
 
-
-dagcomponentfuncs.ImgThumbnail = function (props) {
-    const {setData, data} = props;
-
-    function onClick() {
-        setData(props.value);
-    }
+dagcomponentfuncs.ArtistOrTrackWithThumbnail = function (params) {
+    var smallImageUrl = params.data.images_medium;  // make sure this field exists in your data
+    var artistName = params.value;  // this is because the cell field is "name"
 
     return React.createElement(
         'div',
@@ -21,11 +17,14 @@ dagcomponentfuncs.ImgThumbnail = function (props) {
         React.createElement(
             'img',
             {
-                onClick: onClick,
-                style: {width: '100%', height: 'auto'},
-                src: props.value,
-
-            },
+                style: {width: '50px', height: 'auto', marginRight: '10px'},
+                src: smallImageUrl
+            }
+        ),
+        React.createElement(
+            'span',
+            null,
+            artistName
         )
     );
 };

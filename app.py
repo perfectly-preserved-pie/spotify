@@ -14,8 +14,8 @@ def initial_top_artists_grid(time_range):
     return dag.AgGrid(
         id="top-artists-ag-grid",
         columnDefs=[
-            {"headerName": "", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Artist", "field": "name", "sortable": True, "filter": True},
+            #{"headerName": "", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
+            {"headerName": "Artist", "field": "name", "sortable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
         ],
         rowData=df.to_dict("records"),
@@ -28,8 +28,8 @@ def create_top_tracks_grid(time_range):
     return dag.AgGrid(
         id="top-tracks-ag-grid",
         columnDefs=[
-            {"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Track", "field": "name", "sortable": True, "filter": True},
+            #{"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
+            {"headerName": "Track", "field": "name", "sortable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
             {"headerName": "Artist", "field": "artist", "sortable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
             {"headerName": "Preview URL", "field": "preview_url", "sortable": False, "filter": False, "cellRenderer": "linkCellRenderer"},
