@@ -5,6 +5,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import os
 import pandas as pd
 import spotipy
+import requests
 
 load_dotenv(find_dotenv())
 
@@ -43,6 +44,12 @@ LIMIT = 100  # Maximum number of tracks to retrieve per API call
 
 # Initialize an empty list to hold all track dictionaries for all playlists
 tracks_list = []
+
+# Create a function to generate embed HTML for a given Spotify URI
+# https://developer.spotify.com/documentation/embeds/reference/oembed
+def generate_embed_html(uri):
+    response = requests.get(f'https://open.spotify.com/oembed/{uri}')
+    return response.json()["html"], response.json()["thumbnail_url"]
 
 # Go through each playlist and get each playlist's ID
 logger.info("Getting tracks from each playlist")
@@ -105,6 +112,8 @@ for playlist_name, playlist_id in playlist_dict.items():
             track_dict["id"] = track["track"]["id"]
             track_dict["added_at"] = track["added_at"]
             track_dict["uri"] = track["track"]["uri"]
+            track_dict["embed_html"] = generate_embed_html(track_dict["uri"])[0]
+            track_dict["embed_thumbnail_url"] = generate_embed_html(track_dict["uri"])[1]
             track_dict["playlist_name"] = playlist_name
             logger.success(f"Successfully got track {track_dict['name']} info from {playlist_name}.")
             # Append the track dictionary to the tracks list
@@ -168,11 +177,14 @@ def fetch_top_tracks(spotify, time_ranges, artist_genre_mapping):
             track_dict["images_large"] = images[0].get("url")
             track_dict["images_medium"] = images[1].get("url")
             track_dict["images_small"] = images[2].get("url")
+            track_dict["embed_html"] = generate_embed_html(track["uri"])[0]
+            track_dict["embed_thumbnail_url"] = generate_embed_html(track["uri"])[1]
             top_tracks_list.append(track_dict)
     return top_tracks_list
 
 top_tracks_list = fetch_top_tracks(spotify, ["long_term", "medium_term", "short_term"], artist_genre_mapping)
 
-# Save the top artists and tracks lists to parquet files
+# Save the lists to parquet files
+pd.DataFrame(tracks_list).to_parquet("datasets/tracks.parquet")
 pd.DataFrame(top_artists_list).to_parquet("datasets/top_artists.parquet")
 pd.DataFrame(top_tracks_list).to_parquet("datasets/top_tracks.parquet")
