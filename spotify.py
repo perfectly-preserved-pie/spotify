@@ -133,7 +133,7 @@ def get_genre_for_artist(spotify, artist_id):
 def fetch_top_artists(spotify, time_ranges):
     top_artists_list = []
     for time_range in time_ranges:
-        artists = spotify.current_user_top_artists(limit=5, time_range=time_range)["items"]
+        artists = spotify.current_user_top_artists(limit=50, time_range=time_range)["items"]
         for artist in artists:
             artist_dict = {
                 "name": artist["name"],
@@ -155,7 +155,7 @@ artist_genre_mapping = {artist['id']: artist['genres'] for artist in top_artists
 def fetch_top_tracks(spotify, time_ranges, artist_genre_mapping):
     top_tracks_list = []
     for time_range in time_ranges:
-        tracks = spotify.current_user_top_tracks(limit=5, time_range=time_range)["items"]
+        tracks = spotify.current_user_top_tracks(limit=50, time_range=time_range)["items"]
         for track in tracks:
             track_dict = {
                 "name": track["name"],
