@@ -57,11 +57,19 @@ app.layout = dbc.Container([
                 options=[
                     {"label": "All Time", "value": "long_term"},
                     {"label": "Last 6 Months", "value": "medium_term"},
-                    {"label": "Last 4 Weeks", "value": "short_term"}
+                    {"label": "Last 4 Weeks", "value": "short_term"},
+                    {"label": "Custom Range", "value": "custom"}
                 ],
                 value=default_time_range,
                 clearable=False,
                 className="text-center ag-theme-alpine-dark"
+            ),
+            dcc.DatePickerRange(
+                id='date-range-picker',
+                start_date_placeholder_text="Start Period",
+                end_date_placeholder_text="End Period",
+                display_format='YYYY-MM-DD',
+                style={'display': 'none'}  # initially hidden
             ),
             html.Hr(),
             # Create a title for the top artists grid
@@ -89,6 +97,16 @@ def update_top_artists_grid(time_range):
 )
 def update_top_tracks_grid(time_range):
     return create_top_tracks_grid(time_range)
+
+@app.callback(
+    Output("date-range-picker", "style"),
+    [Input("time-range-dropdown", "value")]
+)
+def show_date_picker(value):
+    if value == "custom":
+        return {}  # show date picker
+    else:
+        return {'display': 'none'}  # hide date picker
 
 # Run the app
 if __name__ == "__main__":
