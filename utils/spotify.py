@@ -1,10 +1,10 @@
 from dotenv import load_dotenv, find_dotenv
 from loguru import logger
 from spotipy.oauth2 import SpotifyOAuth
+from sqlalchemy import create_engine
 import datetime
 import os
 import pandas as pd
-import psycopg2
 import requests
 import spotipy
 
@@ -199,7 +199,7 @@ for track_dict in top_tracks_list:
     track_dict["timestamp"] = current_timestamp
 
 # Save the lists to the database
-db = psycopg2.connect(database="spotify", user=os.getenv("POSTGRES_USER"), password=os.getenv("POSTGRES_PASSWORD"), host="127.0.0.1", port="5432")
+db = create_engine(f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@127.0.0.1:5432/spotify")
 pd.DataFrame(tracks_list).to_sql("all_tracks", db, if_exists="append", index=False)
 pd.DataFrame(top_artists_list).to_sql("top_artists", db, if_exists="append", index=False)
 pd.DataFrame(top_tracks_list).to_sql("top_tracks", db, if_exists="append", index=False)
