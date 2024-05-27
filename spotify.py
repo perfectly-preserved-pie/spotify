@@ -6,6 +6,8 @@ import os
 import pandas as pd
 import spotipy
 import requests
+import sqlite3
+import datetime
 
 load_dotenv(find_dotenv())
 
@@ -184,7 +186,21 @@ def fetch_top_tracks(spotify, time_ranges, artist_genre_mapping):
 
 top_tracks_list = fetch_top_tracks(spotify, ["long_term", "medium_term", "short_term"], artist_genre_mapping)
 
-# Save the lists to parquet files
-pd.DataFrame(tracks_list).to_parquet("datasets/tracks.parquet")
-pd.DataFrame(top_artists_list).to_parquet("datasets/top_artists.parquet")
-pd.DataFrame(top_tracks_list).to_parquet("datasets/top_tracks.parquet")
+# Get the current datetime in ISO format
+current_timestamp = datetime.datetime.now().isoformat()
+
+# Add the timestamp to your data
+for track_dict in tracks_list:
+    track_dict["timestamp"] = current_timestamp
+
+for artist_dict in top_artists_list:
+    artist_dict["timestamp"] = current_timestamp
+
+for track_dict in top_tracks_list:
+    track_dict["timestamp"] = current_timestamp
+
+# Save the lists to SQLite database
+conn = sqlite3.connect("spotify.db")
+pd.DataFrame(tracks_list).to_sql("tracks", conn, if_exists="append", index=False)
+pd.DataFrame(top_artists_list).to_sql("top_artists", conn, if_exists="append", index=False)
+pd.DataFrame(top_tracks_list).to_sql("top_tracks", conn, if_exists="append", index=False)
