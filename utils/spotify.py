@@ -1,13 +1,12 @@
 from dotenv import load_dotenv, find_dotenv
 from loguru import logger
-from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
+import datetime
 import os
 import pandas as pd
-import spotipy
 import requests
+import spotipy
 import sqlite3
-import datetime
 
 load_dotenv(find_dotenv())
 
