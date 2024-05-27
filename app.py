@@ -117,12 +117,11 @@ def show_date_picker(value):
     else:
         return {'display': 'none'}  # hide date picker
 
-from dash.dependencies import Input, Output
-
 @app.callback(
     [
-        Output('top-artists-ag-grid', 'data'),
-        Output('top-tracks-ag-grid', 'data')],  # Add the id of your second grid here
+        Output('top-artists-ag-grid', 'rowData'),
+        Output('top-tracks-ag-grid', 'rowData')
+    ],
     [Input('time-range-dropdown', 'value')]
 )
 def update_grids(selected_time_range):
