@@ -1,12 +1,21 @@
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
+from dotenv import load_dotenv, find_dotenv
+from sqlalchemy import create_engine
 import dash_ag_grid as dag
+import dash_bootstrap_components as dbc
+import datetime
+import os
 import pandas as pd
 
+load_dotenv(find_dotenv())
+
+# Connect to the Postgres database using a SQLAlchemy engine
+db = create_engine(f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTGRES_PASSWORD")}@127.0.0.1:5432/spotify')
+
 # Load the data
-df_artists = pd.read_parquet("datasets/top_artists.parquet")
-df_tracks = pd.read_parquet("datasets/top_tracks.parquet")
+df_artists = pd.read_sql_query("SELECT * FROM top_artists", db)
+df_tracks = pd.read_sql_query("SELECT * FROM top_tracks", db)
 
 # Function to create initial top artists grid
 def initial_top_artists_grid(time_range):
@@ -107,6 +116,35 @@ def show_date_picker(value):
         return {}  # show date picker
     else:
         return {'display': 'none'}  # hide date picker
+
+from dash.dependencies import Input, Output
+
+@app.callback(
+    [
+        Output('top-artists-ag-grid', 'data'),
+        Output('top-tracks-ag-grid', 'data')],  # Add the id of your second grid here
+    [Input('time-range-dropdown', 'value')]
+)
+def update_grids(selected_time_range):
+    # Get the current datetime
+    now = datetime.datetime.now()
+
+    # Calculate the start date based on the selected time range
+    if selected_time_range == 'long_term':
+        start_date = '2000-01-01T00:00:00'  # A date far in the past to get all songs
+    elif selected_time_range == 'medium_term':
+        start_date = (now - datetime.timedelta(days=6*30)).isoformat()  # Last 6 months
+    elif selected_time_range == 'short_term':
+        start_date = (now - datetime.timedelta(days=4*7)).isoformat()  # Last 4 weeks
+    else:
+        start_date = '2000-01-01T00:00:00'  # Default to all songs if the time range is not recognized
+
+    # Query the database for the top artists and songs based on the start date
+    songs = pd.read_sql(f"SELECT * FROM top_tracks WHERE timestamp::text >= '{start_date}'", db)
+    artists = pd.read_sql(f"SELECT * FROM top_artists WHERE timestamp::text >= '{start_date}'", db)
+
+    # Convert the DataFrames to lists of dictionaries and return them
+    return artists.to_dict('records'), songs.to_dict('records')
 
 # Run the app
 if __name__ == "__main__":
