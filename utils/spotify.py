@@ -69,7 +69,7 @@ def generate_embed_html(uri: str) -> Tuple[str, str]:
     response = requests.get(f'https://open.spotify.com/oembed/{uri}')
     return response.json()["html"], response.json()["thumbnail_url"]
 
-def get_genre_for_artist(spotify: Any, artist_id: str) -> List[str]:
+def get_genre_for_artist(spotify: Spotify, artist_id: str) -> List[str]:
     """
     Fetch genres for a given artist ID.
 
@@ -89,7 +89,7 @@ def get_genre_for_artist(spotify: Any, artist_id: str) -> List[str]:
     return genres
 
 
-def fetch_top_artists(spotify: Any, time_ranges: List[str]) -> List[Dict[str, Any]]:
+def fetch_top_artists(spotify: Spotify, time_ranges: List[str]) -> List[Dict[str, Any]]:
     """
     Fetch the top artists for the current user for each time range.
 
@@ -124,7 +124,7 @@ def fetch_top_artists(spotify: Any, time_ranges: List[str]) -> List[Dict[str, An
                 top_artists_list.append(artist_dict)
     return top_artists_list
 
-def fetch_top_tracks(spotify: Any, time_ranges: List[str], artist_genre_mapping: Dict[str, List[str]]) -> List[Dict[str, Any]]:
+def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapping: Dict[str, List[str]]) -> List[Dict[str, Any]]:
     """
     Fetch the top tracks for the current user for each time range.
 
