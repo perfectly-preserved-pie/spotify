@@ -80,11 +80,11 @@ app.layout = dbc.Container([
             html.Hr(),
             # Create a title for the top artists grid
             html.H2("Top Artists", className="text-center"),
-            html.Div(id="top-artists-grid", children=initial_top_artists_grid(default_time_range)),
+            html.Div(id="top-artists-grid", children=initial_top_artists_grid("long_term")),
             html.Hr(),
             # Create a title for the top tracks grid
             html.H2("Top Tracks", className="text-center"),
-            html.Div(id="top-tracks-grid", children=create_top_tracks_grid(default_time_range))
+            html.Div(id="top-tracks-grid", children=create_top_tracks_grid("long_term"))
         ], width=12)
     ])
 ])
