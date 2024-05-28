@@ -76,7 +76,7 @@ def get_genre_for_artist(spotify: Spotify, artist_id: str) -> List[str]:
     This function uses the Spotify Web API to fetch the artist data for a given artist ID, and then returns the genres associated with that artist.
 
     Args:
-        spotify (Any): The Spotify Web API client.
+        spotify (Spotify): The Spotify Web API client.
         artist_id (str): The Spotify ID of the artist.
 
     Returns:
@@ -96,7 +96,7 @@ def fetch_top_artists(spotify: Spotify, time_ranges: List[str]) -> List[Dict[str
     This function uses the Spotify Web API to fetch the top artists for the current user for each time range, and then returns a list of dictionaries containing information about each artist.
 
     Args:
-        spotify (Any): The Spotify Web API client.
+        spotify (Spotify): The Spotify Web API client.
         time_ranges (List[str]): A list of time ranges to fetch the top artists for.
 
     Returns:
@@ -131,7 +131,7 @@ def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapp
     This function uses the Spotify Web API to fetch the top tracks for the current user for each time range, and then returns a list of dictionaries containing information about each track.
 
     Args:
-        spotify (Any): The Spotify Web API client.
+        spotify (Spotify): The Spotify Web API client.
         time_ranges (List[str]): A list of time ranges to fetch the top tracks for.
         artist_genre_mapping (Dict[str, List[str]]): A mapping from artist IDs to genres.
 
