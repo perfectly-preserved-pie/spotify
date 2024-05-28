@@ -1,6 +1,8 @@
 from dash import Dash, dcc, html
+from dash_ag_grid import AgGrid
 from dash.dependencies import Input, Output
 from dotenv import load_dotenv, find_dotenv
+from pandas import DataFrame
 from sqlalchemy import create_engine
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
@@ -17,9 +19,18 @@ db = create_engine(f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTG
 df_artists = pd.read_sql_query("SELECT * FROM top_artists", db)
 df_tracks = pd.read_sql_query("SELECT * FROM top_tracks", db)
 
-# Function to create initial top artists grid
-def initial_top_artists_grid(time_range):
-    df = df_artists[df_artists["time_range"] == time_range]
+# Function to create top artists grid
+def create_top_artists_grid(time_range: str) -> AgGrid:
+    """
+    Creates a grid of top artists for a given time range.
+
+    Parameters:
+    time_range (str): The time range for which to create the grid. This should match a value in the "time_range" column of df_artists.
+
+    Returns:
+    AgGrid: A Dash AgGrid component containing the top artists for the given time range.
+    """
+    df: DataFrame = df_artists[df_artists["time_range"] == time_range]
     return dag.AgGrid(
         id="top-artists-ag-grid",
         columnDefs=[
@@ -32,8 +43,17 @@ def initial_top_artists_grid(time_range):
     )
 
 # Function to create top tracks grid
-def create_top_tracks_grid(time_range):
-    df = df_tracks[df_tracks["time_range"] == time_range]
+def create_top_tracks_grid(time_range: str) -> AgGrid:
+    """
+    Creates a grid of top tracks for a given time range.
+
+    Parameters:
+    time_range (str): The time range for which to create the grid. This should match a value in the "time_range" column of df_tracks.
+
+    Returns:
+    AgGrid: A Dash AgGrid component containing the top tracks for the given time range.
+    """
+    df: DataFrame = df_tracks[df_tracks["time_range"] == time_range]
     return dag.AgGrid(
         id="top-tracks-ag-grid",
         columnDefs=[
@@ -80,7 +100,7 @@ app.layout = dbc.Container([
             html.Hr(),
             # Create a title for the top artists grid
             html.H2("Top Artists", className="text-center"),
-            html.Div(id="top-artists-grid", children=initial_top_artists_grid("long_term")),
+            html.Div(id="top-artists-grid", children=create_top_artists_grid("long_term")),
             html.Hr(),
             # Create a title for the top tracks grid
             html.H2("Top Tracks", className="text-center"),
@@ -95,7 +115,7 @@ app.layout = dbc.Container([
     Input("time-range-dropdown", "value")
 )
 def update_top_artists_grid(time_range):
-    return initial_top_artists_grid(time_range)
+    return create_top_artists_grid(time_range)
 
 @app.callback(
     Output("top-tracks-grid", "children"),
