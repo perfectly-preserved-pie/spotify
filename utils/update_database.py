@@ -106,7 +106,7 @@ top_artists_list, top_tracks_list = fetch_top_data(spotify)
 # Get the current datetime in ISO format
 current_timestamp = datetime.datetime.now().isoformat()
 
-# Add the timestamp to your data
+# Add the timestamp to each dictionary
 for track_dict in tracks_list:
     track_dict["timestamp"] = current_timestamp
 
