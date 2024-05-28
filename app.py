@@ -47,9 +47,6 @@ def create_top_tracks_grid(time_range):
         className="ag-theme-alpine-dark",
     )
 
-# Initial default values
-default_time_range = "long_term"
-
 # Create the app
 external_stylesheets = [dbc.themes.DARKLY, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css"]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
@@ -69,7 +66,7 @@ app.layout = dbc.Container([
                     {"label": "Last 4 Weeks", "value": "short_term"},
                     {"label": "Custom Range", "value": "custom"}
                 ],
-                value=default_time_range,
+                value="long_term",
                 clearable=False,
                 className="text-center ag-theme-alpine-dark"
             ),
