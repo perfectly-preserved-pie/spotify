@@ -4,6 +4,7 @@ from spotipy import Spotify, SpotifyOAuth, SpotifyException
 from typing import Tuple, Any, List, Dict
 import os
 import requests
+import urllib.parse
 
 load_dotenv(find_dotenv())
 
@@ -66,7 +67,8 @@ def generate_embed_html(uri: str) -> Tuple[str, str]:
     Returns:
         Tuple[str, str]: A tuple containing the embed HTML and the thumbnail URL.
     """
-    response = requests.get(f'https://open.spotify.com/oembed/{uri}')
+    encoded_uri = urllib.parse.quote(uri, safe='')
+    response = requests.get(f'https://open.spotify.com/oembed?url={encoded_uri}')
     return response.json()["html"], response.json()["thumbnail_url"]
 
 def get_genre_for_artist(spotify: Spotify, artist_id: str) -> List[str]:
