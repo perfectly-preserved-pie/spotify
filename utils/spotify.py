@@ -48,15 +48,26 @@ def generate_embed_html(uri: str) -> Tuple[str, str]:
     Returns:
         Tuple[str, str]: A tuple containing the embed HTML and the thumbnail URL.
     """
+    # Construct the URL for the oEmbed request
     encoded_uri = urllib.parse.quote(uri, safe='')
-    response = requests.get(f'https://open.spotify.com/oembed?url={encoded_uri}')
+    api_url = f'https://open.spotify.com/oembed?url={encoded_uri}'
+    
+    logger.debug(f"Constructed API URL: {api_url}")
+    
+    # Make the request to the oEmbed API
+    response = requests.get(api_url)
+    
     if response.status_code == 200:
         try:
-            html, thumbnail_url = response.json()["html"], response.json()["thumbnail_url"]
+            # Parse the response JSON
+            response_json = response.json()
+            html = response_json.get("html", "")
+            thumbnail_url = response_json.get("thumbnail_url", "")
+            
             logger.success(f"Successfully generated embed HTML for URI {uri}")
             return html, thumbnail_url
-        except json.decoder.JSONDecodeError:
-            logger.error(f"Invalid JSON response for URI {uri}")
+        except json.decoder.JSONDecodeError as e:
+            logger.error(f"Invalid JSON response for URI {uri}: {e}")
             return None, None
     else:
         logger.error(f"Request to Spotify oEmbed API failed with status code {response.status_code}")
@@ -111,6 +122,7 @@ def fetch_top_artists(spotify: Spotify, time_ranges: List[str]) -> List[Dict[str
             artist_dict["images_large"] = images[0].get("url")
             artist_dict["images_medium"] = images[1].get("url")
             artist_dict["images_small"] = images[2].get("url")
+            artist_dict["embed_html"], artist_dict["embed_thumbnail_url"] = generate_embed_html(artist["uri"])
             top_artists_list.append(artist_dict)
 
     logger.success(f"Successfully fetched top artists for {len(top_artists_list)} artists.")
@@ -152,8 +164,10 @@ def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapp
             track_dict["images_large"] = images[0].get("url")
             track_dict["images_medium"] = images[1].get("url")
             track_dict["images_small"] = images[2].get("url")
-            track_dict["embed_html"] = generate_embed_html(track["uri"])[0]
-            track_dict["embed_thumbnail_url"] = generate_embed_html(track["uri"])[1]
+            # Get the embed HTML and thumbnail URL
+            embed_html, embed_thumbnail_url = generate_embed_html(track["uri"])
+            track_dict["embed_html"] = embed_html
+            track_dict["embed_thumbnail_url"] = embed_thumbnail_url
             top_tracks_list.append(track_dict)
 
     logger.success(f"Successfully fetched top tracks for {len(top_tracks_list)} tracks.")
