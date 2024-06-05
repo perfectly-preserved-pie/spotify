@@ -1,7 +1,7 @@
 var dagcomponentfuncs = window.dashAgGridComponentFunctions = window.dashAgGridComponentFunctions || {};
 
 dagcomponentfuncs.ArtistOrTrackWithThumbnail = function (params) {
-    var smallImageUrl = params.data.images_medium;  // make sure this field exists in your data
+    var smallImageUrl = params.data.images_small;
     var artistName = params.value;  // this is because the cell field is "name"
 
     return React.createElement(
