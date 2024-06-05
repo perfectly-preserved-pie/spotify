@@ -52,8 +52,6 @@ def generate_embed_html(uri: str) -> Tuple[str, str]:
     encoded_uri = urllib.parse.quote(uri, safe='')
     api_url = f'https://open.spotify.com/oembed?url={encoded_uri}'
     
-    logger.debug(f"Constructed API URL: {api_url}")
-    
     # Make the request to the oEmbed API
     response = requests.get(api_url)
     
@@ -111,21 +109,15 @@ def fetch_top_artists(spotify: Spotify, time_ranges: List[str]) -> List[Dict[str
     top_artists_list = []
     for time_range in time_ranges:
         artists = spotify.current_user_top_artists(limit=50, time_range=time_range)["items"]
-        for artist in artists:
+        for index, artist in enumerate(artists):
             artist_dict = {
                 "name": artist["name"],
                 "id": artist["id"],
                 "genres": artist["genres"],
-                "time_range": time_range
+                "time_range": time_range,
+                "rank": index + 1  # Rank of the artist in the list
             }
-            images = artist.get("images", [{}]*3)
-            artist_dict["images_large"] = images[0].get("url")
-            artist_dict["images_medium"] = images[1].get("url")
-            artist_dict["images_small"] = images[2].get("url")
-            artist_dict["embed_html"], artist_dict["embed_thumbnail_url"] = generate_embed_html(artist["uri"])
             top_artists_list.append(artist_dict)
-
-    logger.success(f"Successfully fetched top artists for {len(top_artists_list)} artists.")
     return top_artists_list
 
 def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapping: Dict[str, List[str]]) -> List[Dict[str, Any]]:
@@ -145,14 +137,15 @@ def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapp
     top_tracks_list = []
     for time_range in time_ranges:
         tracks = spotify.current_user_top_tracks(limit=50, time_range=time_range)["items"]
-        for track in tracks:
+        for index, track in enumerate(tracks):
             track_dict = {
                 "name": track["name"],
                 "artist": ", ".join([artist["name"] for artist in track["artists"]]),
                 "id": track["id"],
                 "explicit": track["explicit"],
                 "preview_url": track["preview_url"],
-                "time_range": time_range
+                "time_range": time_range,
+                "rank": index + 1  # Rank of the track in the list
             }
             # Using the mapping to get genres of the artist associated with this track
             # If the artist ID is not in the mapping, fetch the genres from the API
@@ -187,10 +180,6 @@ def fetch_top_data(spotify: Spotify) -> Tuple[List[Dict[str, str]], List[Dict[st
     """
     time_ranges = ["long_term", "medium_term", "short_term"]
     top_artists_list = fetch_top_artists(spotify, time_ranges)
-    for i, artist in enumerate(top_artists_list, start=1):
-        artist['rank'] = i
     artist_genre_mapping = {artist['id']: artist['genres'] for artist in top_artists_list}
     top_tracks_list = fetch_top_tracks(spotify, time_ranges, artist_genre_mapping)
-    for i, track in enumerate(top_tracks_list, start=1):
-        track['rank'] = i
     return top_artists_list, top_tracks_list
