@@ -110,7 +110,7 @@ def fetch_top_artists(spotify: Spotify, time_ranges: List[str]) -> List[Dict[str
     for time_range in time_ranges:
         artists = spotify.current_user_top_artists(limit=50, time_range=time_range)["items"]
         for index, artist in enumerate(artists):
-            images = artist["album"].get("images", [{}]*3)
+            images = artist.get("images", [{}]*3)
             artist_dict = {
                 "name": artist["name"],
                 "id": artist["id"],
