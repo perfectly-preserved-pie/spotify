@@ -155,9 +155,9 @@ def update_grids(selected_time_range):
     else:
         start_date = '2000-01-01T00:00:00'  # Default to all songs if the time range is not recognized
 
-    # Query the database for the top artists and songs based on the start date
-    songs = pd.read_sql(f"SELECT * FROM top_tracks WHERE timestamp::text >= '{start_date}'", db)
-    artists = pd.read_sql(f"SELECT * FROM top_artists WHERE timestamp::text >= '{start_date}'", db)
+    # Query the database for the top artists and songs based on the start date and selected time range
+    songs = pd.read_sql(f"SELECT * FROM top_tracks WHERE timestamp::text >= '{start_date}' AND time_range = '{selected_time_range}'", db)
+    artists = pd.read_sql(f"SELECT * FROM top_artists WHERE timestamp::text >= '{start_date}' AND time_range = '{selected_time_range}'", db)
 
     # Convert the DataFrames to lists of dictionaries and return them
     return artists.to_dict('records'), songs.to_dict('records')
