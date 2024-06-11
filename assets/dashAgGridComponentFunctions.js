@@ -1,5 +1,8 @@
 var dagcomponentfuncs = window.dashAgGridComponentFunctions = window.dashAgGridComponentFunctions || {};
 
+// Define the custom cell renderer functions
+// These functions will be used in the column definitions
+// This function displays the artist or track name with a thumbnail
 dagcomponentfuncs.ArtistOrTrackWithThumbnail = function (params) {
     var smallImageUrl = params.data.images_small;
     var artistName = params.value;  // this is because the cell field is "name"
