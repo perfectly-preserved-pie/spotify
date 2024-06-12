@@ -65,7 +65,7 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
             {"headerName": "Artist", "field": "artist", "sortable": True, "resizable": True, "filter": True},
             {"headerName": "Album", "field": "album", "sortable": True, "resizable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "resizable": True, "filter": True},
-            {"headerName": "Preview URL", "field": "preview_url", "sortable": False, "resizable": True, "filter": False, "cellRenderer": "linkCellRenderer"},
+            #{"headerName": "Preview URL", "field": "preview_url", "sortable": False, "resizable": True, "filter": False, "cellRenderer": "linkCellRenderer"},
         ],
         columnSize="autoSize",
         rowData=df.to_dict("records"),
