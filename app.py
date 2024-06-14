@@ -74,7 +74,13 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
 
 # Create the app
 external_stylesheets = [dbc.themes.DARKLY, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css"]
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+app = Dash(
+    __name__,
+    external_stylesheets=external_stylesheets,
+    meta_tags = [
+      {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+    ],
+)
 
 # App layout
 app.layout = dbc.Container([
