@@ -19,6 +19,12 @@ db = create_engine(f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTG
 df_artists = pd.read_sql_query("SELECT * FROM top_artists", db)
 df_tracks = pd.read_sql_query("SELECT * FROM top_tracks", db)
 
+# Default column definitions for the AgGrid components
+default_column_definitions = {
+    "sortable": True, 
+    "resizable": True
+}
+
 # Function to create top artists grid
 def create_top_artists_grid(time_range: str) -> AgGrid:
     """
@@ -33,11 +39,12 @@ def create_top_artists_grid(time_range: str) -> AgGrid:
     df: DataFrame = df_artists[df_artists["time_range"] == time_range]
     return dag.AgGrid(
         id="top-artists-ag-grid",
+        defaultColDef=default_column_definitions,
         columnDefs=[
             #{"headerName": "", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Rank", "field": "rank", "sortable": True, "resizable": True,"sort": "asc", "width": 10, "maxWidth": 95},
-            {"headerName": "Artist", "field": "name", "sortable": True, "resizable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
-            {"headerName": "Genres", "field": "genres", "sortable": True, "resizable": True, "filter": True},
+            {"headerName": "Rank", "field": "rank","sort": "asc", "width": 10, "maxWidth": 95},
+            {"headerName": "Artist", "field": "name", "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
+            {"headerName": "Genres", "field": "genres", "filter": True},
         ],
         columnSize="responsiveSizeToFit",
         rowData=df.to_dict("records"),
@@ -58,10 +65,10 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
     df: DataFrame = df_tracks[df_tracks["time_range"] == time_range]
     return dag.AgGrid(
         id="top-tracks-ag-grid",
-        defaultColDef={"sortable": True, "resizable": True},
+        defaultColDef=default_column_definitions,
         columnDefs=[
             #{"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Rank", "field": "rank", "sort": "asc"}, 
+            {"headerName": "Rank", "field": "rank", "sort": "asc", "width": 10, "maxWidth": 25}, 
             {"headerName": "Track", "field": "name", "cellRenderer": "ArtistOrTrackWithThumbnail"},
             {"headerName": "Artist", "field": "artist"},
             {"headerName": "Album", "field": "album"},
