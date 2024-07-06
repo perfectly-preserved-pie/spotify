@@ -31,26 +31,6 @@ def create_spotify_client() -> Spotify:
     except SpotifyException as e:
         logger.error(f"Could not create Spotify client. Error: {e}")
         return None
-    
-def get_playlists(spotify: Spotify) -> Any:
-    """
-    Get a list of all playlists for the current user.
-
-    This function uses the Spotify API to fetch all playlists for the current user.
-
-    Args:
-        spotify (Spotify): The Spotify client.
-
-    Returns:
-        Any: The response from the Spotify API, containing the playlists.
-    """
-    try:
-        playlists = spotify.current_user_playlists()
-        logger.success("Successfully got playlists from Spotify API")
-        return playlists
-    except Exception as e:
-        logger.error(f"Could not get playlists from Spotify API. Error: {e}")
-        return None
 
 # Create a function to generate embed HTML for a given Spotify URI
 # https://developer.spotify.com/documentation/embeds/reference/oembed
@@ -68,17 +48,29 @@ def generate_embed_html(uri: str) -> Tuple[str, str]:
     Returns:
         Tuple[str, str]: A tuple containing the embed HTML and the thumbnail URL.
     """
+    # Construct the URL for the oEmbed request
     encoded_uri = urllib.parse.quote(uri, safe='')
-    response = requests.get(f'https://open.spotify.com/oembed?url={encoded_uri}')
+    api_url = f'https://open.spotify.com/oembed?url={encoded_uri}'
+    
+    # Make the request to the oEmbed API
+    response = requests.get(api_url)
+    
     if response.status_code == 200:
         try:
-            return response.json()["html"], response.json()["thumbnail_url"]
-        except json.decoder.JSONDecodeError:
-            logger.error(f"Invalid JSON response for URI {uri}")
+            # Parse the response JSON
+            response_json = response.json()
+            html = response_json.get("html", "")
+            thumbnail_url = response_json.get("thumbnail_url", "")
+            
+            logger.success(f"Successfully generated embed HTML for URI {uri}")
+            return html, thumbnail_url
+        except json.decoder.JSONDecodeError as e:
+            logger.error(f"Invalid JSON response for URI {uri}: {e}")
             return None, None
     else:
         logger.error(f"Request to Spotify oEmbed API failed with status code {response.status_code}")
         return None, None
+
 
 def get_genre_for_artist(spotify: Spotify, artist_id: str) -> List[str]:
     """
@@ -97,6 +89,7 @@ def get_genre_for_artist(spotify: Spotify, artist_id: str) -> List[str]:
     genres = artist_data.get("genres", [])
     if not genres:
         logger.warning(f"No genres found for artist ID: {artist_id}, Artist Name: {artist_data.get('name')}")
+    logger.success(f"Successfully fetched genres {genres} for artist ID: {artist_id}, Artist Name: {artist_data.get('name')}")
     return genres
 
 
@@ -116,23 +109,19 @@ def fetch_top_artists(spotify: Spotify, time_ranges: List[str]) -> List[Dict[str
     top_artists_list = []
     for time_range in time_ranges:
         artists = spotify.current_user_top_artists(limit=50, time_range=time_range)["items"]
-        for artist in artists:
+        for index, artist in enumerate(artists):
+            images = artist.get("images", [{}]*3)
             artist_dict = {
                 "name": artist["name"],
                 "id": artist["id"],
                 "genres": artist["genres"],
-                "time_range": time_range
+                "time_range": time_range,
+                "rank": index + 1,  # Rank of the artist in the list
+                "images_large": images[0].get("url"),
+                "images_medium": images[1].get("url"),
+                "images_small": images[2].get("url")
             }
-            images = artist.get("images", [{}]*3)
-            artist_dict["images_large"] = images[0].get("url")
-            artist_dict["images_medium"] = images[1].get("url")
-            artist_dict["images_small"] = images[2].get("url")
             top_artists_list.append(artist_dict)
-            # Add the rank to the artist dictionary
-            for i, artist in enumerate(artists):
-                artist_dict = {...}
-                artist_dict["rank"] = i + 1
-                top_artists_list.append(artist_dict)
     return top_artists_list
 
 def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapping: Dict[str, List[str]]) -> List[Dict[str, Any]]:
@@ -152,36 +141,34 @@ def fetch_top_tracks(spotify: Spotify, time_ranges: List[str], artist_genre_mapp
     top_tracks_list = []
     for time_range in time_ranges:
         tracks = spotify.current_user_top_tracks(limit=50, time_range=time_range)["items"]
-        for track in tracks:
+        for index, track in enumerate(tracks):
             track_dict = {
                 "name": track["name"],
+                "album": track["album"]["name"],
                 "artist": ", ".join([artist["name"] for artist in track["artists"]]),
                 "id": track["id"],
                 "explicit": track["explicit"],
                 "preview_url": track["preview_url"],
-                "time_range": time_range
+                "time_range": time_range,
+                "rank": index + 1  # Rank of the track in the list
             }
             # Using the mapping to get genres of the artist associated with this track
             # If the artist ID is not in the mapping, fetch the genres from the API
             first_artist_id = track["artists"][0]["id"]
             if first_artist_id not in artist_genre_mapping:
                 artist_genre_mapping[first_artist_id] = get_genre_for_artist(spotify, first_artist_id)
-            elif not artist_genre_mapping[first_artist_id]:
-                logger.warning(f"Empty genre list in mapping for artist ID: {first_artist_id}")
             track_dict["genres"] = artist_genre_mapping[first_artist_id]
             images = track["album"].get("images", [{}]*3)
             track_dict["images_large"] = images[0].get("url")
             track_dict["images_medium"] = images[1].get("url")
             track_dict["images_small"] = images[2].get("url")
-            track_dict["embed_html"] = generate_embed_html(track["uri"])[0]
-            track_dict["embed_thumbnail_url"] = generate_embed_html(track["uri"])[1]
+            # Get the embed HTML and thumbnail URL
+            embed_html, embed_thumbnail_url = generate_embed_html(track["uri"])
+            track_dict["embed_html"] = embed_html
+            track_dict["embed_thumbnail_url"] = embed_thumbnail_url
             top_tracks_list.append(track_dict)
-            # Add the rank to the track dictionary
-            for i, track in enumerate(tracks):
-                track_dict = {...}
-                track_dict["rank"] = i + 1  # Add the rank to the track dictionary
-                top_tracks_list.append(track_dict)
 
+    logger.success(f"Successfully fetched top tracks for {len(top_tracks_list)} tracks.")
     return top_tracks_list
 
 def fetch_top_data(spotify: Spotify) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:

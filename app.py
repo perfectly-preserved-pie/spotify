@@ -19,6 +19,12 @@ db = create_engine(f'postgresql://{os.getenv("POSTGRES_USER")}:{os.getenv("POSTG
 df_artists = pd.read_sql_query("SELECT * FROM top_artists", db)
 df_tracks = pd.read_sql_query("SELECT * FROM top_tracks", db)
 
+# Default column definitions for the AgGrid components
+default_column_definitions = {
+    "sortable": True, 
+    "resizable": True
+}
+
 # Function to create top artists grid
 def create_top_artists_grid(time_range: str) -> AgGrid:
     """
@@ -33,11 +39,14 @@ def create_top_artists_grid(time_range: str) -> AgGrid:
     df: DataFrame = df_artists[df_artists["time_range"] == time_range]
     return dag.AgGrid(
         id="top-artists-ag-grid",
+        defaultColDef=default_column_definitions,
         columnDefs=[
             #{"headerName": "", "field": "images_small", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Artist", "field": "name", "sortable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
-            {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
+            {"headerName": "Rank", "field": "rank","sort": "asc", "width": 10, "maxWidth": 95},
+            {"headerName": "Artist", "field": "name", "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
+            {"headerName": "Genres", "field": "genres", "filter": True},
         ],
+        columnSize="responsiveSizeToFit",
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
     )
@@ -56,20 +65,30 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
     df: DataFrame = df_tracks[df_tracks["time_range"] == time_range]
     return dag.AgGrid(
         id="top-tracks-ag-grid",
+        defaultColDef=default_column_definitions,
         columnDefs=[
             #{"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Track", "field": "name", "sortable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
-            {"headerName": "Artist", "field": "artist", "sortable": True, "filter": True},
-            {"headerName": "Genres", "field": "genres", "sortable": True, "filter": True},
-            {"headerName": "Preview URL", "field": "preview_url", "sortable": False, "filter": False, "cellRenderer": "linkCellRenderer"},
+            {"headerName": "Rank", "field": "rank", "sort": "asc", "width": 10, "maxWidth": 25}, 
+            {"headerName": "Track", "field": "name", "cellRenderer": "ArtistOrTrackWithThumbnail"},
+            {"headerName": "Artist", "field": "artist"},
+            {"headerName": "Album", "field": "album"},
+            {"headerName": "Genres", "field": "genres"},
+            #{"headerName": "Preview URL", "field": "preview_url", "sortable": False, "resizable": True, "filter": False, "cellRenderer": "linkCellRenderer"},
         ],
+        columnSize="autoSize",
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
     )
 
 # Create the app
 external_stylesheets = [dbc.themes.DARKLY, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css"]
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+app = Dash(
+    __name__,
+    external_stylesheets=external_stylesheets,
+    meta_tags = [
+      {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+    ],
+)
 
 # App layout
 app.layout = dbc.Container([
@@ -155,9 +174,24 @@ def update_grids(selected_time_range):
     else:
         start_date = '2000-01-01T00:00:00'  # Default to all songs if the time range is not recognized
 
-    # Query the database for the top artists and songs based on the start date
-    songs = pd.read_sql(f"SELECT * FROM top_tracks WHERE timestamp::text >= '{start_date}'", db)
-    artists = pd.read_sql(f"SELECT * FROM top_artists WHERE timestamp::text >= '{start_date}'", db)
+    # Query the database for the top artists and songs based on the start date and selected time range
+    songs_query = f"""
+    SELECT * FROM (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY timestamp DESC) AS rn
+        FROM top_tracks
+        WHERE timestamp::text >= '{start_date}' AND time_range = '{selected_time_range}'
+    ) AS ranked_tracks WHERE rn = 1;
+    """
+    artists_query = f"""
+    SELECT * FROM (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY timestamp DESC) AS rn
+        FROM top_artists
+        WHERE timestamp::text >= '{start_date}' AND time_range = '{selected_time_range}'
+    ) AS ranked_artists WHERE rn = 1;
+    """
+
+    songs = pd.read_sql(songs_query, db)
+    artists = pd.read_sql(artists_query, db)
 
     # Convert the DataFrames to lists of dictionaries and return them
     return artists.to_dict('records'), songs.to_dict('records')
