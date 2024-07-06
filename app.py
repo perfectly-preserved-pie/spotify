@@ -58,13 +58,14 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
     df: DataFrame = df_tracks[df_tracks["time_range"] == time_range]
     return dag.AgGrid(
         id="top-tracks-ag-grid",
+        defaultColDef={"sortable": True, "resizable": True},
         columnDefs=[
             #{"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Rank", "field": "rank", "sortable": True, "resizable": True, "sort": "asc"},
-            {"headerName": "Track", "field": "name", "sortable": True, "resizable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
-            {"headerName": "Artist", "field": "artist", "sortable": True, "resizable": True, "filter": True},
-            {"headerName": "Album", "field": "album", "sortable": True, "resizable": True, "filter": True},
-            {"headerName": "Genres", "field": "genres", "sortable": True, "resizable": True, "filter": True},
+            {"headerName": "Rank", "field": "rank", "sort": "asc"}, 
+            {"headerName": "Track", "field": "name", "cellRenderer": "ArtistOrTrackWithThumbnail"},
+            {"headerName": "Artist", "field": "artist"},
+            {"headerName": "Album", "field": "album"},
+            {"headerName": "Genres", "field": "genres"},
             #{"headerName": "Preview URL", "field": "preview_url", "sortable": False, "resizable": True, "filter": False, "cellRenderer": "linkCellRenderer"},
         ],
         columnSize="autoSize",
