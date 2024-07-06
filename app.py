@@ -67,7 +67,7 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
             {"headerName": "Genres", "field": "genres", "sortable": True, "resizable": True, "filter": True},
             #{"headerName": "Preview URL", "field": "preview_url", "sortable": False, "resizable": True, "filter": False, "cellRenderer": "linkCellRenderer"},
         ],
-        columnSize="autoSize",
+        columnSize="responsiveSizeToFit",
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
     )
