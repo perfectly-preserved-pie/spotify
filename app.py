@@ -60,14 +60,14 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
         id="top-tracks-ag-grid",
         columnDefs=[
             #{"headerName": "", "field": "images_large", "sortable": False, "filter": False, "cellRenderer": "ImgThumbnail"},
-            {"headerName": "Rank", "field": "rank", "sortable": True, "resizable": True, "sort": "asc", "width": 10, "maxWidth": 95},
+            {"headerName": "Rank", "field": "rank", "sortable": True, "resizable": True, "sort": "asc"},
             {"headerName": "Track", "field": "name", "sortable": True, "resizable": True, "filter": True, "cellRenderer": "ArtistOrTrackWithThumbnail"},
             {"headerName": "Artist", "field": "artist", "sortable": True, "resizable": True, "filter": True},
             {"headerName": "Album", "field": "album", "sortable": True, "resizable": True, "filter": True},
             {"headerName": "Genres", "field": "genres", "sortable": True, "resizable": True, "filter": True},
             #{"headerName": "Preview URL", "field": "preview_url", "sortable": False, "resizable": True, "filter": False, "cellRenderer": "linkCellRenderer"},
         ],
-        columnSize="responsiveSizeToFit",
+        columnSize="autoSize",
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
     )
