@@ -72,6 +72,9 @@ app = Dash(
 
 # App layout
 app.layout = html.Div([
+    html.H1("My Spotify Top Artists and Tracks", className="text-center"),
+    html.Hr(),
+    html.P("Select a time range to view my top artists and tracks for that time period.", className="text-center"),
     dcc.Dropdown(
         id='time-range-dropdown',
         options=[
