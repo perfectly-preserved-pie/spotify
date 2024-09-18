@@ -1,6 +1,6 @@
-from dash import Dash, dcc, html
+from dash import Dash, dcc, html, no_update
 from dash_ag_grid import AgGrid
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv, find_dotenv
 from pandas import DataFrame
 from sqlalchemy import create_engine
@@ -49,6 +49,7 @@ def create_top_artists_grid(time_range: str) -> AgGrid:
         columnSize="responsiveSizeToFit",
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
+        dashGridOptions={"rowSelection": "single"},
     )
 
 # Function to create top tracks grid
@@ -78,6 +79,7 @@ def create_top_tracks_grid(time_range: str) -> AgGrid:
         columnSize="autoSize",
         rowData=df.to_dict("records"),
         className="ag-theme-alpine-dark",
+        dashGridOptions={"rowSelection": "single"},
     )
 
 # Create the app
@@ -88,44 +90,46 @@ app = Dash(
     meta_tags = [
       {"name": "viewport", "content": "width=device-width, initial-scale=1"}
     ],
+    suppress_callback_exceptions=True
 )
 
 # App layout
-app.layout = dbc.Container([
-    dbc.Row([
-        dbc.Col([
-            html.H1("My Spotify Top Artists and Tracks", className="text-center"),
-            html.Hr(),
-            html.P("Select a time range to view my top artists and tracks for that time period.", className="text-center"),
-            dcc.Dropdown(
-                id="time-range-dropdown",
-                options=[
-                    {"label": "All Time", "value": "long_term"},
-                    {"label": "Last 6 Months", "value": "medium_term"},
-                    {"label": "Last 4 Weeks", "value": "short_term"},
-                    {"label": "Custom Range", "value": "custom"}
-                ],
-                value="long_term",
-                clearable=False,
-                className="text-center ag-theme-alpine-dark"
+app.layout = html.Div([
+    dcc.Dropdown(
+        id='time-range-dropdown',
+        options=[
+            {"label": "All Time", "value": "long_term"},
+            {"label": "Last 6 Months", "value": "medium_term"},
+            {"label": "Last 4 Weeks", "value": "short_term"},
+            {"label": "Custom Range", "value": "custom"}
+        ],
+        value="long_term",
+        clearable=False,
+        className="text-center ag-theme-alpine-dark"
+    ),
+    dcc.DatePickerRange(
+        id='date-range-picker',
+        start_date_placeholder_text="Start Period",
+        end_date_placeholder_text="End Period",
+        display_format='YYYY-MM-DD',
+        #style={'display': 'none'}  # initially hidden
+    ),
+    html.Hr(),
+    html.H3("Top Artists"),
+    html.Div(id="top-artists-grid"),  # Placeholder for the top artists grid
+    html.H3("Top Tracks"),
+    html.Div(id="top-tracks-grid"),  # Placeholder for the top tracks grid
+    dbc.Modal(
+        [
+            dbc.ModalHeader(dbc.ModalTitle("Row Data")),
+            dbc.ModalBody(id="modal-body"),
+            dbc.ModalFooter(
+                dbc.Button("Close", id="close-modal", className="ms-auto", n_clicks=0)
             ),
-            dcc.DatePickerRange(
-                id='date-range-picker',
-                start_date_placeholder_text="Start Period",
-                end_date_placeholder_text="End Period",
-                display_format='YYYY-MM-DD',
-                style={'display': 'none'}  # initially hidden
-            ),
-            html.Hr(),
-            # Create a title for the top artists grid
-            html.H2("Top Artists", className="text-center"),
-            html.Div(id="top-artists-grid", children=create_top_artists_grid("long_term")),
-            html.Hr(),
-            # Create a title for the top tracks grid
-            html.H2("Top Tracks", className="text-center"),
-            html.Div(id="top-tracks-grid", children=create_top_tracks_grid("long_term"))
-        ], width=12)
-    ])
+        ],
+        id="row-data-modal",
+        is_open=False,
+    ),
 ])
 
 # Callbacks
@@ -195,6 +199,27 @@ def update_grids(selected_time_range):
 
     # Convert the DataFrames to lists of dictionaries and return them
     return artists.to_dict('records'), songs.to_dict('records')
+
+# Add a callback to handle row clicks and update the modal
+@app.callback(
+    [Output("row-data-modal", "is_open"), Output("modal-body", "children")],
+    [Input("top-artists-ag-grid", "selectedRows"), Input("top-tracks-ag-grid", "selectedRows"), Input("close-modal", "n_clicks")],
+    [State("row-data-modal", "is_open")]
+)
+def display_row_data(selected_artists_rows, selected_tracks_rows, n_clicks, is_open):
+    if n_clicks or selected_artists_rows or selected_tracks_rows:
+        if selected_artists_rows:
+            row_data = selected_artists_rows[0]  # Assuming single row selection
+            genres = row_data.get("genres", [])
+            genres_list = html.Ul([html.Li(genre) for genre in genres])
+            return not is_open, genres_list
+        elif selected_tracks_rows:
+            row_data = selected_tracks_rows[0]  # Assuming single row selection
+            genres = row_data.get("genres", [])
+            genres_list = html.Ul([html.Li(genre) for genre in genres])
+            return not is_open, genres_list
+        return not is_open, no_update
+    return is_open, no_update
 
 # Run the app
 if __name__ == "__main__":
