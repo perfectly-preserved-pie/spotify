@@ -1,4 +1,4 @@
-from dash import Dash, dcc, html, no_update
+from dash import Dash, dcc, html, no_update, ctx
 from dash_ag_grid import AgGrid
 from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv, find_dotenv
@@ -207,19 +207,22 @@ def update_grids(selected_time_range):
     [State("row-data-modal", "is_open")]
 )
 def display_row_data(selected_artists_rows, selected_tracks_rows, n_clicks, is_open):
-    if n_clicks or selected_artists_rows or selected_tracks_rows:
-        if selected_artists_rows:
-            row_data = selected_artists_rows[0]  # Assuming single row selection
-            genres = row_data.get("genres", [])
-            genres_list = html.Ul([html.Li(genre) for genre in genres])
-            return not is_open, genres_list
-        elif selected_tracks_rows:
-            row_data = selected_tracks_rows[0]  # Assuming single row selection
-            genres = row_data.get("genres", [])
-            genres_list = html.Ul([html.Li(genre) for genre in genres])
-            return not is_open, genres_list
-        return not is_open, no_update
-    return is_open, no_update
+    if ctx.triggered_id == "close-modal":
+        return False, no_update
+    if selected_artists_rows:
+        row_data = selected_artists_rows[0]  # Assuming single row selection
+        genres = row_data.get("genres", [])
+        genres_list = html.Ul([html.Li(genre) for genre in genres])
+        return True, genres_list
+    elif selected_tracks_rows:
+        row_data = selected_tracks_rows[0]  # Assuming single row selection
+        genres = row_data.get("genres", [])
+        genres_list = html.Ul([html.Li(genre) for genre in genres])
+        return True, genres_list
+    return no_update, no_update
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
 
 # Run the app
 if __name__ == "__main__":
