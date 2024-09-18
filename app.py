@@ -53,7 +53,7 @@ def create_top_tracks_grid() -> AgGrid:
             {"headerName": "Album", "field": "album"},
             {"headerName": "Genres", "field": "genres"},
         ],
-        columnSize="autoSize",
+        columnSize="responsiveSizeToFit",
         rowData=[],  # Start with an empty grid
         className="ag-theme-alpine-dark",
         dashGridOptions={"rowSelection": "single"},
