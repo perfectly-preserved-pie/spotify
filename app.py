@@ -27,12 +27,6 @@ default_column_definitions = {
 
 # Function to create top artists grid
 def create_top_artists_grid() -> AgGrid:
-    """
-    Creates a grid for top artists without data initially.
-
-    Returns:
-    AgGrid: A Dash AgGrid component for top artists.
-    """
     return dag.AgGrid(
         id="top-artists-ag-grid",
         defaultColDef=default_column_definitions,
@@ -49,12 +43,6 @@ def create_top_artists_grid() -> AgGrid:
 
 # Function to create top tracks grid
 def create_top_tracks_grid() -> AgGrid:
-    """
-    Creates a grid for top tracks without data initially.
-
-    Returns:
-    AgGrid: A Dash AgGrid component for top tracks.
-    """
     return dag.AgGrid(
         id="top-tracks-ag-grid",
         defaultColDef=default_column_definitions,
@@ -101,6 +89,7 @@ app.layout = html.Div([
         start_date_placeholder_text="Start Period",
         end_date_placeholder_text="End Period",
         display_format='YYYY-MM-DD',
+        style={'display': 'none'}  # initially hidden
     ),
     html.Hr(),
     html.H3("Top Artists"),
@@ -161,6 +150,17 @@ def update_grids(selected_time_range):
 
     # Convert the DataFrames to lists of dictionaries and return them
     return artists.to_dict('records'), songs.to_dict('records')
+
+# Callback to show/hide date picker based on dropdown value
+@app.callback(
+    Output("date-range-picker", "style"),
+    [Input("time-range-dropdown", "value")]
+)
+def toggle_date_picker(selected_value):
+    if selected_value == "custom":
+        return {'display': 'block'}  # Show the date picker
+    else:
+        return {'display': 'none'}  # Hide the date picker
 
 # Add a callback to handle row clicks and update the modal
 @app.callback(
